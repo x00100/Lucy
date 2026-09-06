@@ -1,0 +1,52 @@
+name: Send Random English Messages
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send random message to group
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN2 }}
+        run: |
+          MESSAGES=(
+            "Hello! 👋 How's everyone doing today?"
+            "Hi there! What are you up to right now?"
+            "Is anyone here? Let's chat! 💬"
+            "Good morning! ☀️ What's your plan for today?"
+            "Good evening! How was your day?"
+            "Hey! What's the best thing that happened to you today? 😊"
+            "Hello friends! Anyone want to share something interesting?"
+            "Hi! What's on your mind right now?"
+            "Greetings! 🌟 What are you passionate about?"
+            "Hey guys! How's life treating you?"
+            "Hello world! 🌍 What's your favorite hobby?"
+            "Hi! If you could travel anywhere, where would you go? ✈️"
+            "Good night! 🌙 What's one thing you're grateful for today?"
+            "Hey! What's your favorite movie or series? 🎬"
+            "Hello! What music are you listening to these days? 🎵"
+            "Hi everyone! Any weekend plans? 🎉"
+            "Greetings! What's your dream job? 💼"
+            "Hey! What's the most exciting thing you've learned recently? 📚"
+            "Hello! Coffee or tea? ☕🍵"
+            "Hi! What would you do if you had a free day tomorrow? 🌟"
+          )
+          
+          RANDOM_INDEX=$((RANDOM % ${#MESSAGES[@]}))
+          RANDOM_MESSAGE="${MESSAGES[$RANDOM_INDEX]}"
+          
+          echo "Selected message: $RANDOM_MESSAGE"
+          
+          curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+          -d chat_id=-1002507938213 \
+          -d text="$RANDOM_MESSAGE"
+          
+          echo "Message sent successfully!"
