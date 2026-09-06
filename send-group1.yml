@@ -1,0 +1,46 @@
+name: Send Random Message - Group 1
+
+on:
+  schedule:
+    - cron: '7 * * * *'             # حدود دقیقه ۷ هر ساعت (کمتر شلوغ، تأخیر کمتر)
+  workflow_dispatch:                # برای تست دستی
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir requests
+
+      - name: Send to Group 1 (with retry)
+        env:
+          BOT_TOKEN:   ${{ secrets.BOT_TOKEN }}
+          GROUP1_ID:   ${{ secrets.GROUP1_ID }}
+          GROUP2_ID:   ${{ secrets.GROUP2_ID }}
+        run: |
+          echo "زمان شروع واقعی: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+          for attempt in {1..3}; do
+            echo "تلاش $attempt برای group1"
+            python bot.py group1 && break
+
+            if [ $attempt -eq 3 ]; then
+              echo "❌ شکست بعد از ۳ تلاش"
+              exit 1
+            fi
+
+            echo "ناموفق – صبر ${attempt}0 ثانیه"
+            sleep $((attempt * 10))
+          done
+
+          echo "✅ group1 موفق"
